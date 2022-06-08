@@ -105,12 +105,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private void editShape() {
         switch (selectedType) {
             case POLYLINE:
-                this.polylineEdit();
+                this.polylineEdit(); break;
             case MARKER:
-                this.markerEdit();
+                this.markerEdit(); break;
             case POLYGON:
-                this.polygonEdit();
-            default:
+                this.polygonEdit(); break;
+            default: break;
         }
     }
 
@@ -302,8 +302,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
 
         mMap.setOnMapClickListener(latLng -> {
-            locations.add(new CustomLocation(new LatLng(latLng.latitude, latLng.longitude), null, TAG++));
+            CustomLocation customLocation = new CustomLocation(new LatLng(latLng.latitude, latLng.longitude), null, TAG++);
+            selectedType = SelectedShapeType.MARKER;
+            locations.add(customLocation);
             this.mapRedraw();
+            selectedMarker = customLocation.getMarker();
+            if (selectedMarker != null) {
+                floatingActionButton.show();
+            } else {
+                floatingActionButton.hide();
+            }
         });
 
         mMap.setOnMapLongClickListener(latLng -> {

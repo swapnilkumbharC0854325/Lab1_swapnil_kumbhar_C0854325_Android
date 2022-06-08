@@ -15,6 +15,10 @@ public class CustomLocation {
         return ID;
     }
 
+    public Marker getMarker() {
+        return marker;
+    }
+
     public CustomLocation(LatLng location, String title, int ID) {
         this.location = location;
         this.title = title;
