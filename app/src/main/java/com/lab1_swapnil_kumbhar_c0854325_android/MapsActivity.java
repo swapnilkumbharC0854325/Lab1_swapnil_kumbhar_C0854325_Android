@@ -48,6 +48,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+
         locations.add(new CustomLocation(new LatLng(46.66,-112.28), "A"));
         locations.add(new CustomLocation(new LatLng(47.46,-101.42), "B"));
         locations.add(new CustomLocation(new LatLng(39.76,-104.99), "C"));
