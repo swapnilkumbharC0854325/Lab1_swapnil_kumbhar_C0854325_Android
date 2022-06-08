@@ -22,6 +22,10 @@ public class CustomPolygon {
     private double distance;
     private Polygon polygon;
 
+    public Polygon getPolygon() {
+        return polygon;
+    }
+
     public Marker getDistanceMarker() {
         return distanceMarker;
     }

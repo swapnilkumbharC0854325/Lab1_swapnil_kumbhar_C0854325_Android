@@ -306,6 +306,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             this.mapRedraw();
         });
 
+        mMap.setOnMapLongClickListener(latLng -> {
+            boolean isInside = GFG.isInside(polygon.getPolygon().getPoints(), polygon.getPolygon().getPoints().size(), latLng);
+            if (isInside) {
+                for (int i = 0; i < lines.size(); i++) {
+                    CustomPolyline polyline = lines.get(i);
+                    polyline.remove();
+                }
+                lines.clear();
+                polygon.remove();
+                for (int i = 0; i < locations.size(); i++) {
+                    locations.get(i).remove();
+                }
+                locations.clear();
+                mapRedraw();
+            }
+        });
+
         mMap.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener() {
             @Override
             public void onMarkerDrag(@NonNull Marker marker) {
@@ -334,5 +351,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
     }
+
+
 
 }
