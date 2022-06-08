@@ -75,6 +75,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             mMap.addMarker(new MarkerOptions().position(location.getLocation()).title(location.getTitle()));
         }
         mMap.addPolygon(createPolygonOptions());
+
         lines.add(new CustomPolyline(locations.get(0), locations.get(1), ++TAG, mMap));
         lines.add(new CustomPolyline(locations.get(1), locations.get(2), ++TAG, mMap));
         lines.add(new CustomPolyline(locations.get(2), locations.get(3), ++TAG, mMap));
@@ -83,7 +84,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.setOnPolylineClickListener(polyline -> {
             try {
                 int index = (int) polyline.getTag();
-                Log.i("SWAPNIL", "index" + " " + index);
                 CustomPolyline m = lines.get(index);
                 if (m.isDistanceMarkerShown()) {
                     m.getDistanceMarker().hideInfoWindow();
@@ -97,16 +97,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
 
         });
-    }
-
-    private PolylineOptions createPolylineOptions(CustomLocation a, CustomLocation b) {
-        final PolylineOptions options = new PolylineOptions();
-        options.add(a.getLocation());
-        options.add(b.getLocation());
-        options.color(0xffff0000);
-        options.width(3);
-        options.clickable(true);
-        return options;
     }
 
     private PolygonOptions createPolygonOptions() {
