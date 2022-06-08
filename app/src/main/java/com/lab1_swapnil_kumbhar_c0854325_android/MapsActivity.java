@@ -1,38 +1,27 @@
 package com.lab1_swapnil_kumbhar_c0854325_android;
 
-import androidx.annotation.RequiresApi;
-import androidx.fragment.app.FragmentActivity;
-
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
-import android.location.Location;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
 import android.widget.EditText;
 import android.widget.SearchView;
-import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.fragment.app.FragmentActivity;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptor;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
-import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.Polyline;
-import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.android.gms.maps.model.TileOverlayOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.lab1_swapnil_kumbhar_c0854325_android.databinding.ActivityMapsBinding;
 import com.lab1_swapnil_kumbhar_c0854325_android.models.CustomLocation;
@@ -51,7 +40,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private GoogleMap mMap;
     private ActivityMapsBinding binding;
     private final ArrayList<CustomLocation> locations = new ArrayList();
-    private ArrayList<CustomPolyline> lines = new ArrayList<>();
+    private final ArrayList<CustomPolyline> lines = new ArrayList<>();
     private int TAG = -1;
     private FloatingActionButton floatingActionButton;
     private Polyline selectedPolyline = null;
@@ -59,8 +48,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Marker selectedMarker = null;
     private CustomPolygon polygon;
     private SelectedShapeType selectedType = SelectedShapeType.NONE;
-    ArrayList<Address> arraylist = new ArrayList<Address>();
-
+    private Marker currentDraggingMarker = null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -208,7 +196,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             CustomLocation customLocation = locations.get(i);
             customLocation.draw(mMap);
             if (i < locations.size() - 1) {
-                CustomLocation nextPoint = locations.get(i+1);
+                CustomLocation nextPoint = locations.get(i + 1);
                 lines.add(new CustomPolyline(customLocation, nextPoint, ++TAG));
             } else {
                 lines.add(new CustomPolyline(locations.get(0), customLocation, ++TAG));
@@ -220,6 +208,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
         if (locations.size() > 2) {
             polygon.draw(mMap);
+        } else {
+            polygon.remove();
         }
     }
 
@@ -239,10 +229,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(northAmerica, 6.0f));
 
 
-        locations.add(new CustomLocation(new LatLng(46.66,-112.28), "A", TAG++));
-        locations.add(new CustomLocation(new LatLng(47.46,-101.42), "B", TAG++));
-        locations.add(new CustomLocation(new LatLng(39.76,-104.99), "C", TAG++));
-        locations.add(new CustomLocation(new LatLng(36.12,-115.31), "D", TAG++));
+        locations.add(new CustomLocation(new LatLng(46.66, -112.28), "A", TAG++));
+        locations.add(new CustomLocation(new LatLng(47.46, -101.42), "B", TAG++));
+        locations.add(new CustomLocation(new LatLng(39.76, -104.99), "C", TAG++));
+        locations.add(new CustomLocation(new LatLng(36.12, -115.31), "D", TAG++));
         polygon = new CustomPolygon(locations);
 
         this.mapRedraw();
@@ -312,16 +302,35 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
 
         mMap.setOnMapClickListener(latLng -> {
-            locations.add(new CustomLocation(new LatLng(latLng.latitude,latLng.longitude), null, TAG++));
+            locations.add(new CustomLocation(new LatLng(latLng.latitude, latLng.longitude), null, TAG++));
             this.mapRedraw();
         });
-        
-        mMap.setOnMapLongClickListener(latLng -> {
-            for (int i = 0; i < locations.size(); i++) {
-                CustomLocation customLocation = locations.get(i);
-                if (customLocation.compareWith(latLng)) {
-                    Toast.makeText(this, "Marker clicked", Toast.LENGTH_SHORT).show();
+
+        mMap.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener() {
+            @Override
+            public void onMarkerDrag(@NonNull Marker marker) {
+
+            }
+
+            @Override
+            public void onMarkerDragEnd(@NonNull Marker marker) {
+                int index = -1;
+                for (int i = 0; i < locations.size(); i++) {
+                    CustomLocation customLocation = locations.get(i);
+                    if (customLocation.compareWith(currentDraggingMarker)) {
+                        index = i;
+                    }
                 }
+                if (index != -1) {
+                    locations.get(index).remove();
+                    locations.remove(index);
+                    mapRedraw();
+                }
+            }
+
+            @Override
+            public void onMarkerDragStart(@NonNull Marker marker) {
+                currentDraggingMarker = marker;
             }
         });
     }

@@ -49,6 +49,12 @@ public class CustomPolygon {
         polygon = mMap.addPolygon(createPolygonOptions(mMap));
     }
 
+    public void remove() {
+        if (polygon != null) {
+            polygon.remove();
+        }
+    }
+
     private PolygonOptions createPolygonOptions(GoogleMap mMap) {
         DecimalFormat df = new DecimalFormat("0.00");
         final PolygonOptions options = new PolygonOptions();

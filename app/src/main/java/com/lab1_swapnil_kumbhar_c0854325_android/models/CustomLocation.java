@@ -41,10 +41,18 @@ public class CustomLocation {
         if (marker != null) {
             marker.remove();
         }
-        marker = mMap.addMarker(new MarkerOptions().position(location).title(title));
+        marker = mMap.addMarker(new MarkerOptions().position(location).title(title).draggable(true));
+        if (marker != null) {
+            marker.setTag(this.ID);
+        }
     }
 
-    public boolean compareWith(LatLng latLng) {
-        return location.latitude == latLng.latitude && location.longitude == latLng.longitude;
+    public boolean compareWith(Marker marker) {
+
+        return ((int) marker.getTag()) == this.ID;
+    }
+
+    public void remove() {
+        this.marker.remove();
     }
 }
