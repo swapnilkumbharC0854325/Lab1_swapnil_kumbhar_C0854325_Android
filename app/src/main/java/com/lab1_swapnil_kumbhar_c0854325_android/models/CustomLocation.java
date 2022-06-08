@@ -5,10 +5,16 @@ import com.google.android.gms.maps.model.LatLng;
 public class CustomLocation {
     private LatLng location;
     private String title;
+    private final int ID;
 
-    public CustomLocation(LatLng location, String title) {
+    public int getID() {
+        return ID;
+    }
+
+    public CustomLocation(LatLng location, String title, int ID) {
         this.location = location;
         this.title = title;
+        this.ID = ID;
     }
 
     public LatLng getLocation() {

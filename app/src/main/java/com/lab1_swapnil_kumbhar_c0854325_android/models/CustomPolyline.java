@@ -28,6 +28,10 @@ public class CustomPolyline {
     private int TAG;
     private double distance;
 
+    public int getTAG() {
+        return TAG;
+    }
+
     public boolean isDistanceMarkerShown() {
         return isDistanceMarkerShown;
     }

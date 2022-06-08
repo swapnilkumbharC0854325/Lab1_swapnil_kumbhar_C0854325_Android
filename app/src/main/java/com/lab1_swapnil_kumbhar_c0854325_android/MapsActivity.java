@@ -3,11 +3,16 @@ package com.lab1_swapnil_kumbhar_c0854325_android;
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.FragmentActivity;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.InputType;
 import android.util.Log;
+import android.widget.EditText;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -18,6 +23,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
@@ -27,9 +33,11 @@ import com.lab1_swapnil_kumbhar_c0854325_android.databinding.ActivityMapsBinding
 import com.lab1_swapnil_kumbhar_c0854325_android.models.CustomLocation;
 import com.lab1_swapnil_kumbhar_c0854325_android.models.CustomPolygon;
 import com.lab1_swapnil_kumbhar_c0854325_android.models.CustomPolyline;
-
+import com.lab1_swapnil_kumbhar_c0854325_android.models.SelectedShapeType;
 import java.util.ArrayList;
 import java.util.List;
+
+import yuku.ambilwarna.AmbilWarnaDialog;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -40,7 +48,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private int TAG = -1;
     private FloatingActionButton floatingActionButton;
     private Polyline selectedPolyline = null;
+    private Polygon selectedPolygon = null;
+    private Marker selectedMarker = null;
     private CustomPolygon polygon;
+    private SelectedShapeType selectedType = SelectedShapeType.NONE;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,13 +67,86 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         floatingActionButton = findViewById(R.id.floatingActionButton);
 
+        floatingActionButton.setOnClickListener(view -> {
+            this.editShape();
+        });
         floatingActionButton.hide();
 
 
-        locations.add(new CustomLocation(new LatLng(46.66,-112.28), "A"));
-        locations.add(new CustomLocation(new LatLng(47.46,-101.42), "B"));
-        locations.add(new CustomLocation(new LatLng(39.76,-104.99), "C"));
-        locations.add(new CustomLocation(new LatLng(36.12,-115.31), "D"));
+        locations.add(new CustomLocation(new LatLng(46.66,-112.28), "A", TAG++));
+        locations.add(new CustomLocation(new LatLng(47.46,-101.42), "B", TAG++));
+        locations.add(new CustomLocation(new LatLng(39.76,-104.99), "C", TAG++));
+        locations.add(new CustomLocation(new LatLng(36.12,-115.31), "D", TAG++));
+    }
+
+    private void editShape() {
+        switch (selectedType) {
+            case POLYLINE:
+                this.polylineEdit();
+            case MARKER:
+                this.markerEdit();
+            case POLYGON:
+                this.polygonEdit();
+            default:
+        }
+    }
+
+    private void polylineEdit() {
+        if (selectedPolygon != null) {
+            int color = selectedPolyline.getColor();
+            AmbilWarnaDialog dialog = new AmbilWarnaDialog(MapsActivity.this, color, true, new AmbilWarnaDialog.OnAmbilWarnaListener() {
+                @Override
+                public void onOk(AmbilWarnaDialog dialog, int color) {
+                    selectedPolyline.setColor(color);
+                }
+
+                @Override
+                public void onCancel(AmbilWarnaDialog dialog) {
+                }
+            });
+            dialog.show();
+        }
+    }
+
+    private void markerEdit() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Title");
+
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        builder.setView(input);
+
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+//                m_Text = input.getText().toString();
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+    }
+
+    private void polygonEdit() {
+        if (selectedPolygon != null) {
+            int color = selectedPolygon.getFillColor();
+            AmbilWarnaDialog dialog = new AmbilWarnaDialog(MapsActivity.this, color, true, new AmbilWarnaDialog.OnAmbilWarnaListener() {
+                @Override
+                public void onOk(AmbilWarnaDialog dialog, int color) {
+                    selectedPolygon.setFillColor(color);
+                }
+
+                @Override
+                public void onCancel(AmbilWarnaDialog dialog) {
+                }
+            });
+            dialog.show();
+        }
     }
 
     /**
@@ -97,34 +181,63 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 if (this.polygon.isDistanceMarkerShown()) {
                     this.polygon.getDistanceMarker().hideInfoWindow();
                     this.polygon.setDistanceMarkerShown(false);
+                    this.selectedPolygon = null;
                 } else {
                     this.polygon.getDistanceMarker().showInfoWindow();
                     this.polygon.setDistanceMarkerShown(true);
+                    selectedType = SelectedShapeType.POLYGON;
+                    this.selectedPolygon = polygon;
+                }
+                if (selectedPolygon != null) {
+                    floatingActionButton.show();
+                } else {
+                    floatingActionButton.hide();
                 }
             }
         });
         mMap.setOnPolylineClickListener(polyline -> {
             try {
                 int index = (int) polyline.getTag();
-                CustomPolyline m = lines.get(index);
-                if (m.isDistanceMarkerShown()) {
-                    m.getDistanceMarker().hideInfoWindow();
-                    m.setDistanceMarkerShown(false);
-                    selectedPolyline = null;
-                } else {
-                    m.getDistanceMarker().showInfoWindow();
-                    m.setDistanceMarkerShown(true);
-                    selectedPolyline = polyline;
-                }
-                if (selectedPolyline != null) {
-                    floatingActionButton.show();
-                } else {
-                    floatingActionButton.hide();
+                for (int i = 0; i < lines.size(); i++) {
+                    CustomPolyline customPolyline = lines.get(i);
+                    if (customPolyline.getTAG() == index) {
+                        if (customPolyline.isDistanceMarkerShown()) {
+                            customPolyline.getDistanceMarker().hideInfoWindow();
+                            customPolyline.setDistanceMarkerShown(false);
+                            selectedPolyline = null;
+                        } else {
+                            customPolyline.getDistanceMarker().showInfoWindow();
+                            customPolyline.setDistanceMarkerShown(true);
+                            selectedPolyline = polyline;
+                            selectedType = SelectedShapeType.POLYLINE;
+                        }
+                        if (selectedPolyline != null) {
+                            floatingActionButton.show();
+                        } else {
+                            floatingActionButton.hide();
+                        }
+                    }
                 }
             } catch (NullPointerException e) {
                 System.out.println(e.getMessage());
             }
 
+        });
+
+        mMap.setOnMarkerClickListener(marker -> {
+            this.selectedMarker = marker;
+            selectedType = SelectedShapeType.MARKER;
+            if (marker.isInfoWindowShown()) {
+                marker.hideInfoWindow();
+            } else {
+                marker.showInfoWindow();
+            }
+            if (selectedMarker != null) {
+                floatingActionButton.show();
+            } else {
+                floatingActionButton.hide();
+            }
+            return true;
         });
     }
 
