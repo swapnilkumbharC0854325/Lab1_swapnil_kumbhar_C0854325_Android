@@ -22,7 +22,6 @@
         android:foregroundGravity="bottom|center"
         android:src="@android:drawable/ic_menu_edit"
         tools:ignore="RtlHardcoded" />
-
     <SearchView
         android:layout_width="match_parent"
         android:background="@color/black"

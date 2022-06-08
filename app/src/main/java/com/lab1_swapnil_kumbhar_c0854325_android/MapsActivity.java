@@ -76,6 +76,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+                    if (addressList.size() == 0) {
+                        return false;
+                    }
                     Address address = addressList.get(0);
 
                     LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
