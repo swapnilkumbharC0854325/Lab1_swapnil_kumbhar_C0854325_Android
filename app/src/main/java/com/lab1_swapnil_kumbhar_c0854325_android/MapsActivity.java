@@ -73,10 +73,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         floatingActionButton.hide();
 
 
-        locations.add(new CustomLocation(new LatLng(46.66,-112.28), "A", TAG++));
-        locations.add(new CustomLocation(new LatLng(47.46,-101.42), "B", TAG++));
-        locations.add(new CustomLocation(new LatLng(39.76,-104.99), "C", TAG++));
-        locations.add(new CustomLocation(new LatLng(36.12,-115.31), "D", TAG++));
     }
 
     private void editShape() {
@@ -174,21 +170,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-
-        // Add a marker in Sydney and move the camera
         LatLng northAmerica = new LatLng(42.92, -109.62);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(northAmerica, 6.0f));
 
-        for (CustomLocation location: locations) {
-            mMap.addMarker(new MarkerOptions().position(location.getLocation()).title(location.getTitle()));
-        }
 
-        polygon = new CustomPolygon(locations, mMap);
+        locations.add(new CustomLocation(new LatLng(46.66,-112.28), "A", TAG++, mMap));
+        locations.add(new CustomLocation(new LatLng(47.46,-101.42), "B", TAG++, mMap));
+        locations.add(new CustomLocation(new LatLng(39.76,-104.99), "C", TAG++, mMap));
+        locations.add(new CustomLocation(new LatLng(36.12,-115.31), "D", TAG++, mMap));
 
         lines.add(new CustomPolyline(locations.get(0), locations.get(1), ++TAG, mMap));
         lines.add(new CustomPolyline(locations.get(1), locations.get(2), ++TAG, mMap));
         lines.add(new CustomPolyline(locations.get(2), locations.get(3), ++TAG, mMap));
         lines.add(new CustomPolyline(locations.get(3), locations.get(0), ++TAG, mMap));
+
+        polygon = new CustomPolygon(locations, mMap);
+
         mMap.setOnPolygonClickListener(polygon -> {
             if (this.polygon != null) {
                 if (this.polygon.isDistanceMarkerShown()) {
@@ -251,6 +248,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 floatingActionButton.hide();
             }
             return true;
+        });
+
+        mMap.setOnMapClickListener(latLng -> {
+            locations.add(new CustomLocation(new LatLng(latLng.latitude,latLng.longitude), null, TAG++, mMap));
         });
     }
 
