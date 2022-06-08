@@ -9,6 +9,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
 
 import java.text.DecimalFormat;
@@ -17,8 +18,9 @@ import java.util.ArrayList;
 public class CustomPolygon {
     private Marker distanceMarker;
     private boolean isDistanceMarkerShown = false;
-    private ArrayList<CustomLocation> points;
+    private final ArrayList<CustomLocation> points;
     private double distance;
+    private Polygon polygon;
 
     public Marker getDistanceMarker() {
         return distanceMarker;
@@ -36,9 +38,15 @@ public class CustomPolygon {
         isDistanceMarkerShown = distanceMarkerShown;
     }
 
-    public CustomPolygon(ArrayList<CustomLocation> points, GoogleMap mMap) {
+    public CustomPolygon(ArrayList<CustomLocation> points) {
         this.points = points;
-        mMap.addPolygon(createPolygonOptions(mMap));
+    }
+
+    public void draw(GoogleMap mMap) {
+        if (polygon != null) {
+            polygon.remove();
+        }
+        polygon = mMap.addPolygon(createPolygonOptions(mMap));
     }
 
     private PolygonOptions createPolygonOptions(GoogleMap mMap) {

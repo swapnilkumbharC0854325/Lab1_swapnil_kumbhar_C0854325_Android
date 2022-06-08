@@ -40,10 +40,33 @@ public class CustomPolyline {
         isDistanceMarkerShown = distanceMarkerShown;
     }
 
-    public CustomPolyline(CustomLocation point1, CustomLocation point2, int TAG, GoogleMap mMap) {
+    public CustomPolyline(CustomLocation point1, CustomLocation point2, int TAG) {
         this.point1 = point1;
         this.point2 = point2;
         this.TAG = TAG;
+    }
+
+    public Polyline getPolyline() {
+        return polyline;
+    }
+
+
+    private PolylineOptions createPolylineOptions(CustomLocation a, CustomLocation b) {
+        final PolylineOptions options = new PolylineOptions();
+        options.add(a.getLocation());
+        options.add(b.getLocation());
+        options.color(0xffff0000);
+        options.width(3);
+        options.clickable(true);
+        return options;
+    }
+    public void remove() {
+        if (this.polyline != null) {
+            this.polyline.remove();
+        }
+    }
+
+    public void draw(GoogleMap mMap) {
         this.polyline = mMap.addPolyline(createPolylineOptions(this.point1, this.point2));
         double lat = (this.point1.getLocation().latitude + this.point2.getLocation().latitude) / 2;
         double lng = (this.point1.getLocation().longitude + this.point2.getLocation().longitude) / 2;
@@ -61,20 +84,5 @@ public class CustomPolyline {
                 .icon(invisibleMarker)
                 .anchor(0f, 0f));
         polyline.setTag(this.TAG);
-    }
-
-    public Polyline getPolyline() {
-        return polyline;
-    }
-
-
-    private PolylineOptions createPolylineOptions(CustomLocation a, CustomLocation b) {
-        final PolylineOptions options = new PolylineOptions();
-        options.add(a.getLocation());
-        options.add(b.getLocation());
-        options.color(0xffff0000);
-        options.width(3);
-        options.clickable(true);
-        return options;
     }
 }

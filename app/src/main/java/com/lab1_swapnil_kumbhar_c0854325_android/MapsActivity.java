@@ -7,11 +7,16 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
 import android.widget.EditText;
+import android.widget.SearchView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -34,6 +39,8 @@ import com.lab1_swapnil_kumbhar_c0854325_android.models.CustomLocation;
 import com.lab1_swapnil_kumbhar_c0854325_android.models.CustomPolygon;
 import com.lab1_swapnil_kumbhar_c0854325_android.models.CustomPolyline;
 import com.lab1_swapnil_kumbhar_c0854325_android.models.SelectedShapeType;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,6 +59,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Marker selectedMarker = null;
     private CustomPolygon polygon;
     private SelectedShapeType selectedType = SelectedShapeType.NONE;
+    ArrayList<Address> arraylist = new ArrayList<Address>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +72,37 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        SearchView searchView = findViewById(R.id.search_bar_text);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                String location = searchView.getQuery().toString();
+
+                List<Address> addressList = null;
+
+                if (location != null || location.equals("")) {
+                    Geocoder geocoder = new Geocoder(MapsActivity.this);
+                    try {
+                        addressList = geocoder.getFromLocationName(location, 1);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    Address address = addressList.get(0);
+
+                    LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
+                    locations.add(new CustomLocation(latLng, "", TAG++));
+                    mapRedraw();
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 6f));
+                }
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
 
         floatingActionButton = findViewById(R.id.floatingActionButton);
 
@@ -158,6 +197,32 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
+
+    private void mapRedraw() {
+        for (int i = 0; i < lines.size(); i++) {
+            CustomPolyline polyline = lines.get(i);
+            polyline.remove();
+        }
+        lines.clear();
+        for (int i = 0; i < locations.size(); i++) {
+            CustomLocation customLocation = locations.get(i);
+            customLocation.draw(mMap);
+            if (i < locations.size() - 1) {
+                CustomLocation nextPoint = locations.get(i+1);
+                lines.add(new CustomPolyline(customLocation, nextPoint, ++TAG));
+            } else {
+                lines.add(new CustomPolyline(locations.get(0), customLocation, ++TAG));
+            }
+        }
+        for (int i = 0; i < lines.size(); i++) {
+            CustomPolyline polyline = lines.get(i);
+            polyline.draw(mMap);
+        }
+        if (locations.size() > 2) {
+            polygon.draw(mMap);
+        }
+    }
+
     /**
      * Manipulates the map once available.
      * This callback is triggered when the map is ready to be used.
@@ -174,17 +239,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(northAmerica, 6.0f));
 
 
-        locations.add(new CustomLocation(new LatLng(46.66,-112.28), "A", TAG++, mMap));
-        locations.add(new CustomLocation(new LatLng(47.46,-101.42), "B", TAG++, mMap));
-        locations.add(new CustomLocation(new LatLng(39.76,-104.99), "C", TAG++, mMap));
-        locations.add(new CustomLocation(new LatLng(36.12,-115.31), "D", TAG++, mMap));
+        locations.add(new CustomLocation(new LatLng(46.66,-112.28), "A", TAG++));
+        locations.add(new CustomLocation(new LatLng(47.46,-101.42), "B", TAG++));
+        locations.add(new CustomLocation(new LatLng(39.76,-104.99), "C", TAG++));
+        locations.add(new CustomLocation(new LatLng(36.12,-115.31), "D", TAG++));
+        polygon = new CustomPolygon(locations);
 
-        lines.add(new CustomPolyline(locations.get(0), locations.get(1), ++TAG, mMap));
-        lines.add(new CustomPolyline(locations.get(1), locations.get(2), ++TAG, mMap));
-        lines.add(new CustomPolyline(locations.get(2), locations.get(3), ++TAG, mMap));
-        lines.add(new CustomPolyline(locations.get(3), locations.get(0), ++TAG, mMap));
-
-        polygon = new CustomPolygon(locations, mMap);
+        this.mapRedraw();
 
         mMap.setOnPolygonClickListener(polygon -> {
             if (this.polygon != null) {
@@ -251,7 +312,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
 
         mMap.setOnMapClickListener(latLng -> {
-            locations.add(new CustomLocation(new LatLng(latLng.latitude,latLng.longitude), null, TAG++, mMap));
+            locations.add(new CustomLocation(new LatLng(latLng.latitude,latLng.longitude), null, TAG++));
+            this.mapRedraw();
+        });
+        
+        mMap.setOnMapLongClickListener(latLng -> {
+            for (int i = 0; i < locations.size(); i++) {
+                CustomLocation customLocation = locations.get(i);
+                if (customLocation.compareWith(latLng)) {
+                    Toast.makeText(this, "Marker clicked", Toast.LENGTH_SHORT).show();
+                }
+            }
         });
     }
 

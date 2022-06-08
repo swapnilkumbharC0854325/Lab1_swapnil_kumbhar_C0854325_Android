@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:map="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -16,10 +16,19 @@
         android:id="@+id/floatingActionButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|right"
         android:layout_margin="16dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
         android:foregroundGravity="bottom|center"
         android:src="@android:drawable/ic_menu_edit"
         tools:ignore="RtlHardcoded" />
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+    <SearchView
+        android:layout_width="match_parent"
+        android:background="@color/black"
+        android:id="@+id/search_bar_text"
+        android:layout_margin="16dp"
+        android:theme="@style/CardView"
+        android:elevation="16dp"
+        android:layout_height="wrap_content" />
+</RelativeLayout>
