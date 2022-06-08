@@ -109,17 +109,29 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private void markerEdit() {
+        if (selectedMarker == null) {
+            return;
+        }
+        selectedMarker.hideInfoWindow();
+        String previousTitle = selectedMarker.getTitle();
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Title");
 
         final EditText input = new EditText(this);
-        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        input.setText(previousTitle);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
         builder.setView(input);
 
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-//                m_Text = input.getText().toString();
+                String m_Text = input.getText().toString();
+                if (m_Text.isEmpty()) {
+                    selectedMarker.setTitle(previousTitle);
+                } else {
+                    selectedMarker.setTitle(m_Text);
+                }
+
             }
         });
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -130,6 +142,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
 
         builder.show();
+        selectedType = SelectedShapeType.NONE;
     }
 
     private void polygonEdit() {
