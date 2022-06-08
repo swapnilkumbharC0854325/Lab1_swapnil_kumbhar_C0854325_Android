@@ -81,7 +81,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
                     locations.add(new CustomLocation(latLng, "", TAG++));
                     mapRedraw();
-                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 6f));
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 5f));
                 }
                 return false;
             }
@@ -226,7 +226,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         LatLng northAmerica = new LatLng(42.92, -109.62);
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(northAmerica, 6.0f));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(northAmerica, 5.0f));
 
 
         locations.add(new CustomLocation(new LatLng(46.66, -112.28), "A", TAG++));
