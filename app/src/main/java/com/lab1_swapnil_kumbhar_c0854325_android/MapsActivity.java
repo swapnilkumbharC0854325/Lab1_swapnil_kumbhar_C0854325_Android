@@ -22,8 +22,10 @@ import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.TileOverlayOptions;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.lab1_swapnil_kumbhar_c0854325_android.databinding.ActivityMapsBinding;
 import com.lab1_swapnil_kumbhar_c0854325_android.models.CustomLocation;
+import com.lab1_swapnil_kumbhar_c0854325_android.models.CustomPolygon;
 import com.lab1_swapnil_kumbhar_c0854325_android.models.CustomPolyline;
 
 import java.util.ArrayList;
@@ -36,6 +38,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private final ArrayList<CustomLocation> locations = new ArrayList();
     private ArrayList<CustomPolyline> lines = new ArrayList<>();
     private int TAG = -1;
+    private FloatingActionButton floatingActionButton;
+    private Polyline selectedPolyline = null;
+    private CustomPolygon polygon;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +53,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        floatingActionButton = findViewById(R.id.floatingActionButton);
+
+        floatingActionButton.hide();
 
 
         locations.add(new CustomLocation(new LatLng(46.66,-112.28), "A"));
@@ -76,13 +85,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         for (CustomLocation location: locations) {
             mMap.addMarker(new MarkerOptions().position(location.getLocation()).title(location.getTitle()));
         }
-        mMap.addPolygon(createPolygonOptions());
+
+        polygon = new CustomPolygon(locations, mMap);
 
         lines.add(new CustomPolyline(locations.get(0), locations.get(1), ++TAG, mMap));
         lines.add(new CustomPolyline(locations.get(1), locations.get(2), ++TAG, mMap));
         lines.add(new CustomPolyline(locations.get(2), locations.get(3), ++TAG, mMap));
         lines.add(new CustomPolyline(locations.get(3), locations.get(0), ++TAG, mMap));
-
+        mMap.setOnPolygonClickListener(polygon -> {
+            if (this.polygon != null) {
+                if (this.polygon.isDistanceMarkerShown()) {
+                    this.polygon.getDistanceMarker().hideInfoWindow();
+                    this.polygon.setDistanceMarkerShown(false);
+                } else {
+                    this.polygon.getDistanceMarker().showInfoWindow();
+                    this.polygon.setDistanceMarkerShown(true);
+                }
+            }
+        });
         mMap.setOnPolylineClickListener(polyline -> {
             try {
                 int index = (int) polyline.getTag();
@@ -90,9 +110,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 if (m.isDistanceMarkerShown()) {
                     m.getDistanceMarker().hideInfoWindow();
                     m.setDistanceMarkerShown(false);
+                    selectedPolyline = null;
                 } else {
                     m.getDistanceMarker().showInfoWindow();
                     m.setDistanceMarkerShown(true);
+                    selectedPolyline = polyline;
+                }
+                if (selectedPolyline != null) {
+                    floatingActionButton.show();
+                } else {
+                    floatingActionButton.hide();
                 }
             } catch (NullPointerException e) {
                 System.out.println(e.getMessage());
@@ -101,14 +128,4 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
     }
 
-    private PolygonOptions createPolygonOptions() {
-        final PolygonOptions options = new PolygonOptions();
-        options.add(locations.get(0).getLocation());
-        options.add(locations.get(1).getLocation());
-        options.add(locations.get(2).getLocation());
-        options.add(locations.get(3).getLocation());
-        options.fillColor(0x5900ff00);
-        options.strokeWidth(0);
-        return options;
-    }
 }
